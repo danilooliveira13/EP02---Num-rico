@@ -4,6 +4,8 @@ from tkinter import Y
 import numpy as np
 import math
 
+from sympy import root
+
 # W6 W8 W10
 W_d = [[],
      [],
@@ -36,17 +38,8 @@ def integral_gauss_1A(f, n):
     X = np.concatenate((-X[::-1], X))
     W = np.concatenate((W[::-1], W))
     somatorio = 0
-    # Quantidade par de nós:
-    if (n%2 == 0):
-        for j in range(0, round(n/2)):
-            somatorio += (W[n][j]) * (f(-X[n][j]) + f(X[n][j]))
-    # Quantidade ímpar de nós:
-    else:
-        for j in range(0, round(n/2)):
-            if (j == 0):
-                somatorio += W[n][j] * f(X[n][j])
-            else:
-                somatorio += (W[n][j]) * (f(-X[n][j]) + f(X[n][j]))
+    for i in range(n):
+        somatorio += W[i] * f(X[i])    
     return somatorio
 
 # Integral Numérica de Gauss: f(x)dx em [a,b]
@@ -65,7 +58,7 @@ def integral_gauss_2A(f, n):
     for i in range(n):
         for j in range(n):
             somatorio += (W[i]*W[j] * f(X[i],X[j]))
-    return somatorio 
+    return somatorio
 
 # Integral Numérica de Gauss: f(x,y)dydx em [a,b] e [c(x),d(x)]
 def integral_gauss_2B(f, a, b, c, d , n):
@@ -82,24 +75,10 @@ def integral_gauss_3A(f, n):
     X = np.concatenate((-X[::-1], X))
     W = np.concatenate((W[::-1], W))
     somatorio = 0
-    # if (n%2 == 0):
-        # for i in range(0, round(n/2)):
-        #     for j in range(0, round(n/2)):
-        #         for k in range(0, round(n/2)):
-        #             somatorio += (W[n][i]*W[n][j]*W[n][k] * (f(-X[n][i],-X[n][j],-X[n][k]) + f(X[n][i],X[n][j],X[n][k])))
     for i in range(n):
         for j in range(n):
             for k in range(n):
                 somatorio += (W[i]*W[j]*W[k] * f(X[i],X[j],X[k]))
-    # n ímpar:
-    # else:
-    #     for i in range(0, round(n/2)):
-    #         for j in range(0, round(n/2)):
-    #             for k in range(0, round(n/2)):
-    #                 if (j == 0):
-    #                     somatorio += (W[n][i]*W[n][j]*W[n][k] * f(X[n][i],X[n][j],X[n][k]))
-    #                 else:
-    #                     somatorio += (W[n][i]*W[n][j]*W[n][k] * (f(-X[n][i],-X[n][j],-X[n][k]) + f(X[n][i],X[n][j],X[n][k])))
     return somatorio 
 
 # Integral Numérica de Gauss: f(x,y,z)dzdydx em [a,b], [c(x),d(x)] e [e(x,y),f(x,y)]
@@ -128,28 +107,136 @@ def exemplo_1A():
     n = [6, 8, 10]
     for i in n:
         resultados.append(integral_gauss_3B(f1,0,1,c,d,e,f,i))
-    print("\nExemplo 1A - Área do cubo de aresta 1:\n")
+    print("\nExemplo 1A - Área do cubo de aresta 1:")
+    for i in range(3):
+        print('\tn = {}\tResultado = {:0.22f}'.format(n[i], resultados[i]))
+
+def exemplo_1B():
+    def f1(x,y,z):
+        return 1
+    def c(x):
+        return 0
+    def d(x):
+        return 1-x
+    def e(x,y):
+        return 0
+    def f(x,y):
+        return 1-x-y
+    resultados = []
+    n = [6, 8, 10]
+    for i in n:
+        resultados.append(integral_gauss_3B(f1,0,1,c,d,e,f,i))
+    print("\nExemplo 1B - Área do tetraedro:")
+    for i in range(3):
+        print('\tn = {}\tResultado = {:0.22f}'.format(n[i], resultados[i]))
+
+def exemplo_2A():
+    def f1(x,y):
+        return 1
+    def c(x):
+        return 0
+    def d(x):
+        return 1-x**2
+    resultados = []
+    n = [6, 8, 10]
+    for i in n:
+        resultados.append(integral_gauss_2B(f1,0,1,c,d,i))
+    print("\nExemplo 2A - Área no primeiro quadrante, limitada pelos eixos e por y = 1 - x^2:")
+    for i in range(3):
+        print('\tn = {}\tResultado = {:0.22f}'.format(n[i], resultados[i]))
+
+def exemplo_2B():
+    def f1(y,x):
+        return 1
+    def c(y):
+        return 0
+    def d(y):
+        return root(1-y,2)
+    resultados = []
+    n = [6, 8, 10]
+    for i in n:
+        resultados.append(integral_gauss_2B(f1,0,1,c,d,i))
+    print("\nExemplo 2B - Área no primeiro quadrante, limitada pelos eixos e por y = 1 - x^2:")
+    for i in range(3):
+        print('\tn = {}\tResultado = {:0.22f}'.format(n[i], resultados[i]))
+
+def exemplo_3A():
+    def f1(x,y):
+        fx = -(np.e**(y/x))*(y/x**2)
+        fy = (np.e**(y/x))/x
+        func = root(fx**2  + fy**2 +1, 2)
+        return func
+    def c(x):
+        return x**3
+    def d(x):
+        return x**2
+    resultados = []
+    n = [6, 8, 10]
+    for i in n:
+        resultados.append(integral_gauss_2B(f1,0.1,0.5,c,d,i))
+    print("\nExemplo 3A - Área da superfíe descrita por z = e^(y/x):")
+    for i in range(3):
+        print('\tn = {}\tResultado = {:0.22f}'.format(n[i], resultados[i]))
+
+def exemplo_3B():
+    def f1(x,y,z):
+        return 1
+    def c(x):
+        return x**3
+    def d(x):
+        return x**2
+    def e(x,y):
+        return 0
+    def f(x,y):
+        return np.e**(y/x)
+    resultados = []
+    n = [6, 8, 10]
+    for i in n:
+        resultados.append(integral_gauss_3B(f1,0.1,0.5,c,d,e,f,i))
+    print("\nExemplo 3B - Volume da superfíe descrita por z = e^(y/x):")
+    for i in range(3):
+        print('\tn = {}\tResultado = {:0.22f}'.format(n[i], resultados[i]))
+
+def exemplo_4A():
+    def f1(x,y):
+        return 2*pi*y
+    def c(x):
+        return 0
+    def d(x):
+        return root(1/4 - x**2, 2)
+    resultados = []
+    n = [6, 8, 10]
+    for i in n:
+        resultados.append(integral_gauss_2B(f1,0,1/4,c,d,i))
+    print("\nExemplo 4A - Volume da calota esférica de altura 1/4 da altura da esfera de raio 1:")
+    for i in range(3):
+        print('\tn = {}\tResultado = {:0.22f}'.format(n[i], resultados[i]))
+
+def exemplo_4B():
+    def f1(y,x):
+        return 2*pi*x
+    def c(y):
+        return 0
+    def d(y):
+        return np.e**(-y**2)
+    resultados = []
+    n = [6, 8, 10]
+    for i in n:
+        resultados.append(integral_gauss_2B(f1,-1,1,c,d,i))
+    print("\nExemplo 4A - Volume do sólido de revolução:")
     for i in range(3):
         print('\tn = {}\tResultado = {:0.22f}'.format(n[i], resultados[i]))
 
 def main():
-    def f2(x,y):
-        return 1
-    a=0
-    b=1
-    def c(x):
-        return 0
-    def d(x):
-        return 1
-    resultados = []
-    n = [6, 8, 10]
-    for i in n:
-        resultados.append(integral_gauss_2B(f2,0,1,c,d,i))
-    print("\tTeste:")
-    for i in range(3):
-        print('\tn = {}\tResultado = {:0.22f}'.format(n[i], resultados[i]))
-
-    print('\n')
+    print('\nExercício Programa 2: INTEGRAÇÃO NUMÉRICA DE GAUSS')
+    print('Autores:\n\tRenato Naves Fleury\n\tDanilo Oliveira da Silva')
     exemplo_1A()
-
+    exemplo_1B()
+    exemplo_2A()
+    exemplo_2B()
+    exemplo_3A()
+    exemplo_3B()
+    exemplo_4A()
+    exemplo_4B()
+    print('\n')
 main()
